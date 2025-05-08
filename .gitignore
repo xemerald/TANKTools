@@ -1,0 +1,19 @@
+# Ignore the swap files.
+*.swp
+
+# Ignore the object files.
+*.o
+
+# Ignore the library files.
+*.a
+*.so
+
+# Ignore the vscode config.
+.vscode
+
+# Ignore the execute files.
+tnk_*
+!tnk_*.c
+
+# Ignore testing data
+test
