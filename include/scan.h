@@ -1,18 +1,22 @@
 /**
  * @file scan.h
- * @author your name (you@domain.com)
+ * @author Benjamin Ming Yang @ Department of Geoscience, National Taiwan University (b98204032@gmail.com)
  * @brief
- * @version 0.1
  * @date 2024-02-07
  *
  * @copyright Copyright (c) 2024
  *
  */
 #pragma once
-
-/* */
+/**
+ * @name
+ *
+ */
 #include <stdbool.h>
-/* */
+/**
+ * @name
+ *
+ */
 #include <trace_buf.h>
 
 /**
@@ -20,9 +24,21 @@
  *
  */
 typedef struct {
-	size_t offset;    /* Offset in bytes from beginning of input file */
-	size_t size;      /* Length in bytes of this TRACEBUF2 message    */
-	double time;      /* A time from the header of this TRACEBUF2 msg */
+	size_t offset;          /* Offset in bytes from beginning of input file  */
+	size_t size;            /* Length in bytes of this TRACEBUF2 message     */
+	double time;            /* A time from the header of this TRACEBUF2 msg  */
+	char   orig_byte_order; /* The original byte order of this TRACEBUF2 msg */
+	char   padding[7];      /* The padding for 8-bytes alignments            */
 } TB_INFO;
 
-int scan_tb( TB_INFO **, int *, void * const, void * const, bool (*)( const TRACE2_HEADER *, const void * ), const void * );
+/**
+ * @brief
+ *
+ */
+typedef bool (*ACCEPT_TB_COND)( const TRACE2_HEADER *, const void * );
+
+/**
+ * @name
+ *
+ */
+int scan_tb( TB_INFO **, int *, void * const, void * const, ACCEPT_TB_COND, const void * );

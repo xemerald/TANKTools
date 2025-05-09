@@ -38,11 +38,11 @@ static int    proc_argv( int, char *[] );
 static void   usage( void );
 
 /* */
-static double       StartEpoch = 0.0;
-static double       EndEpoch = 0.0;
-static double       Duration = 600.0;
-static char        *InputTank = NULL;
-static char        *OutputTank = NULL;
+static double StartEpoch = 0.0;
+static double EndEpoch   = 0.0;
+static double Duration   = 600.0;
+static char  *InputTank  = NULL;
+static char  *OutputTank = NULL;
 
 /**
  * @brief
@@ -84,7 +84,7 @@ int main( int argc, char *argv[] )
 	tankend   = tankstart + (size_t)fs.st_size;
 /* Now lets get down to business and cut the data out of the tank */
 	if ( scan_tb( &tb_infos, &num_tb, tankstart, tankend, accept_tb_cond, NULL ) <= 0 ) {
-		fprintf(stderr, "%s Can not mark all the tracebuf from tankfile <%s>.\n", progbar_now(), InputTank);
+		fprintf(stderr, "%s Can not mark the tracebuf from tankfile <%s>.\n", progbar_now(), InputTank);
 		return -1;
 	}
 /* */

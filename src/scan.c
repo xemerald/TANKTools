@@ -1,21 +1,26 @@
 /**
  * @file scan.c
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
+ * @author Benjamin Ming Yang @ Department of Geoscience, National Taiwan University (b98204032@gmail.com)
+ * @brief Scaning function for the trace buf data.
  * @date 2025-05-08
  *
  * @copyright Copyright (c) 2025
  *
  */
-/* */
+
+/**
+ * @name
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <math.h>
-#include <float.h>
-/* */
+
+/**
+ * @name
+ *
+ */
 #include <trace_buf.h>
 #include <swap.h>
 #include <scan.h>
@@ -39,12 +44,13 @@
  */
 int scan_tb(
 	TB_INFO **tb_infos, int *num_tb_info, void * const tankstart, void * const tankend,
-	bool (*accept_cond)( const TRACE2_HEADER *, const void * ), const void *arg
+	ACCEPT_TB_COND accept_cond, const void *arg
 ) {
-	int            _num_tb_info = 0;                    /* Total # msgs read of one trace        */
-	int            max_tb_info  = MAX_NUM_TBUF;         /* Max # msgs read of one trace        */
+	int            _num_tb_info = 0;                    /* Total # msgs read of one trace                     */
+	int            max_tb_info  = MAX_NUM_TBUF;         /* Max # msgs read of one trace                       */
+	char           o_byte_order = ' ';                  /* The original byte order of the trace               */
 	size_t         skipbyte     = 0;                    /* total # bytes skipped from last successed fetching */
-	TRACE2_HEADER *trh2         = NULL;                 /* tracebuf message read from file      */
+	TRACE2_HEADER *trh2         = NULL;                 /* tracebuf message read from file                    */
 	uint8_t       *tankbyte     = (uint8_t *)tankstart;
 	TB_INFO       *_tb_infos    = (TB_INFO *)calloc(max_tb_info, sizeof(TB_INFO));
 
@@ -57,7 +63,7 @@ int scan_tb(
 	do {
 		trh2 = (TRACE2_HEADER *)tankbyte;
 	/* Swap the byte order into local order, and check the validity of this tracebuf */
-		if ( swap_wavemsg2_makelocal( trh2 ) < 0 ) {
+		if ( swap_wavemsg2_makelocal( trh2, &o_byte_order ) < 0 ) {
 			if ( ++tankbyte < (uint8_t *)tankend ) {
 				skipbyte++;
 				continue;
@@ -75,9 +81,10 @@ int scan_tb(
 		}
 
 	/* Fill in the pertinent info */
-		_tb_infos[_num_tb_info].offset = tankbyte - (uint8_t *)tankstart;
-		_tb_infos[_num_tb_info].size   = (atoi(&trh2->datatype[1]) * trh2->nsamp) + sizeof(TRACE2_HEADER);
-		_tb_infos[_num_tb_info].time   = trh2->endtime;
+		_tb_infos[_num_tb_info].offset          = tankbyte - (uint8_t *)tankstart;
+		_tb_infos[_num_tb_info].size            = (atoi(&trh2->datatype[1]) * trh2->nsamp) + sizeof(TRACE2_HEADER);
+		_tb_infos[_num_tb_info].time            = trh2->endtime;
+		_tb_infos[_num_tb_info].orig_byte_order = o_byte_order;
 	/* Keep track the total bytes we have read, and move the pointer to the next header */
 		tankbyte += _tb_infos[_num_tb_info].size;
 	/* Skip those do not fit the condition */
@@ -86,7 +93,8 @@ int scan_tb(
 	/* Skip over data samples */
 		if ( _tb_infos[_num_tb_info].size > MAX_TRACEBUF_SIZ ) {
 			fprintf(
-				stderr, "%s: *** tracebuf[%ld] too large, maximum[%d] ***\n", __func__, _tb_infos[_num_tb_info].size, MAX_TRACEBUF_SIZ
+				stderr, "%s: *** tracebuf[%ld bytes] too large, maximum is %d bytes ***\n",
+				__func__, _tb_infos[_num_tb_info].size, MAX_TRACEBUF_SIZ
 			);
 			continue;
 		}

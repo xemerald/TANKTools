@@ -1,8 +1,7 @@
 /**
  * @file tnk_sniff.c
  * @author Benjamin Ming Yang @ National Taiwan University (b98204032@gmail.com)
- * @brief tnk_sniff is a quick utility to extract a specified SCNL out of a tank player tank.
- *        The data from the tank can then be used in tankplayer.
+ * @brief tnk_sniff is a quick utility to sniff & display all the trace out of a tank player tank.
  * @date 2025-05-07
  *
  * @copyright Copyright (c) 2025
@@ -15,9 +14,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include <math.h>
 #include <time.h>
-#include <float.h>
+#include <math.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -92,7 +90,7 @@ int main( int argc, char *argv[] )
 	tankend   = tankstart + (size_t)fs.st_size;
 /* Now lets get down to business and cut the data out of the tank */
 	if ( scan_tb( &tb_infos, &num_tb, tankstart, tankend, accept_tb_cond, NULL ) <= 0 ) {
-		fprintf(stderr, "%s Can not mark all the tracebuf from tankfile <%s>.\n", progbar_now(), InputTank);
+		fprintf(stderr, "%s Can not mark the tracebuf from tankfile <%s>.\n", progbar_now(), InputTank);
 		return -1;
 	}
 /* */
@@ -112,8 +110,8 @@ int main( int argc, char *argv[] )
 		fprintf(
 			stdout,
 	/* More decimal places for slower sample rates */
-			trh2->samprate < 1.0 ? "%d %s %4d %6.4f %s (%.4f) %s (%.4f) %ld bytes\n" : "%d %s %4d %.1f %s (%.4f) %s (%.4f) %ld bytes ",
-			trh2->pinno, trh2->datatype, trh2->nsamp, trh2->samprate,
+			trh2->samprate < 1.0 ? "%d %c%c %4d %6.4f %s (%.4f) %s (%.4f) %ld bytes\n" : "%d %c%c %4d %.1f %s (%.4f) %s (%.4f) %ld bytes ",
+			trh2->pinno, tb_infos[i].orig_byte_order, trh2->datatype[1], trh2->nsamp, trh2->samprate,
 			stime, trh2->starttime, etime, trh2->endtime, tb_infos[i].size
 		);
 		fprintf(stdout, "\n");
@@ -368,10 +366,6 @@ static int proc_argv( int argc, char *argv[] )
 		fprintf(stderr, "Error, an input tank name must be provided\n");
 		return -2;
 	}
-	if ( !ExtractSta && !ExtractComp && !ExtractNet && !ExtractLoc ) {
-		fprintf(stderr, "Error, at least one of SCNL code should be specified\n");
-		return -2;
-	}
 
 	return 0;
 }
@@ -399,7 +393,7 @@ static void usage( void )
 		" -h               Show this usage message\n"
 		" -v               Report program version\n"
 		"\n"
-		"This program will extract the specified SCNL data from the input TANK file.\n"
+		"This program will sniff & display the trace data from the input TANK file by order.\n"
 		"\n"
 	);
 }
